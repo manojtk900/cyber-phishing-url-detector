@@ -1,0 +1,158 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "generated": "2025-12-07",
+    "notes": "Edit this file to add or change questions and answers."
+  },
+  "categories": [
+    {
+      "id": "phishing_basics",
+      "label": "Phishing basics",
+      "items": [
+        {
+          "id": "what_is_phishing",
+          "question": "What is phishing?",
+          "icon": "❓",
+          "autoSend": true,
+          "answer": "Phishing is a scam where attackers impersonate trusted parties (email, websites, SMS) to steal credentials, money or sensitive data. Be cautious with unexpected links and requests for passwords or OTPs."
+        },
+        {
+          "id": "common_signs",
+          "question": "What are common phishing signs?",
+          "icon": "🔎",
+          "autoSend": true,
+          "answer": "Common signs: urgent language, poor grammar, mismatched sender domains, suspicious links, and unexpected attachments. Hover links to see their real target before clicking."
+        },
+        {
+          "id": "phishing_vs_vishing",
+          "question": "Phishing vs vishing vs smishing",
+          "icon": "📞",
+          "autoSend": true,
+          "answer": "Phishing = email/web scams, vishing = voice call scams, smishing = SMS scams. All try to trick you into revealing sensitive information."
+        }
+      ]
+    },
+    {
+      "id": "email_and_links",
+      "label": "Email & links",
+      "items": [
+        {
+          "id": "phishing_email_example",
+          "question": "How do phishing emails look?",
+          "icon": "📧",
+          "autoSend": true,
+          "answer": "They often use urgent warnings, fake sender names, and links that don't match the displayed text. Example: 'Your account will be closed. Click https://bank.example.verify-login.com to reactivate.' The domain is a clue—don't click."
+        },
+        {
+          "id": "check_link_safe",
+          "question": "How to check if a link is safe?",
+          "icon": "🔗",
+          "autoSend": true,
+          "answer": "Hover the link to preview the URL, check for typos or extra subdomains, use a URL scanner, and avoid shortened links from unknown senders."
+        },
+        {
+          "id": "sample_phishing_email",
+          "question": "Show an example phishing email",
+          "icon": "🧾",
+          "autoSend": true,
+          "answer": "Example: 'Attention: Update your account now: https://secure-bank-login.example.com' — notice the odd subdomain and urgency. Always verify the sender domain separately."
+        }
+      ]
+    },
+    {
+      "id": "actions_after_exposure",
+      "label": "Actions after exposure",
+      "items": [
+        {
+          "id": "clicked_scam_link",
+          "question": "I clicked a scam link — what now?",
+          "icon": "⚠",
+          "autoSend": true,
+          "answer": "Close the page, do NOT enter credentials. Clear browser cache, change passwords for affected accounts, enable 2FA, and run antivirus. Contact your bank if you shared payment details."
+        },
+        {
+          "id": "shared_password",
+          "question": "I shared my password — what should I do?",
+          "icon": "🔐",
+          "autoSend": true,
+          "answer": "Immediately change the password for that account and for any other account using the same password. Enable two-factor authentication and check for unusual activity."
+        },
+        {
+          "id": "recover_compromised",
+          "question": "Steps to recover a compromised account",
+          "icon": "🛠",
+          "autoSend": true,
+          "answer": "Reset password, enable 2FA, remove unknown devices/sessions, contact support, and check transactions or sent messages for abuse."
+        }
+      ]
+    },
+    {
+      "id": "payments_upi",
+      "label": "Payments & UPI",
+      "items": [
+        {
+          "id": "upi_fraud",
+          "question": "What is UPI fraud and how to avoid it?",
+          "icon": "💸",
+          "autoSend": true,
+          "answer": "UPI fraud includes social engineering, fake payment approvals, and QR-code scams. Never share your UPI PIN or approve payments you didn't initiate."
+        },
+        {
+          "id": "money_sent_scammer",
+          "question": "What to do if money was sent to a scammer?",
+          "icon": "🏦",
+          "autoSend": true,
+          "answer": "Contact your bank immediately with transaction IDs and timestamps. File a police complaint and ask the bank for a possible reversal."
+        }
+      ]
+    },
+    {
+      "id": "reporting",
+      "label": "Reporting & help",
+      "items": [
+        {
+          "id": "report_cybercrime",
+          "question": "How to report cybercrime in my country?",
+          "icon": "📝",
+          "autoSend": true,
+          "answer": "Report to your local police cyber unit and to your bank. Many countries have online cybercrime portals—search your national police or government site for reporting steps."
+        },
+        {
+          "id": "contact_bank_help",
+          "question": "Who to contact for bank/fraud help?",
+          "icon": "📞",
+          "autoSend": true,
+          "answer": "Contact your bank's fraud helpline immediately. They can block transactions, freeze accounts, and advise next steps."
+        }
+      ]
+    },
+    {
+      "id": "quick_utilities",
+      "label": "Quick utilities",
+      "items": [
+        {
+          "id": "is_this_url_safe",
+          "question": "Is this URL safe?",
+          "icon": "🔍",
+          "autoSend": false,
+          "action": "open_url_check",
+          "answer": "Opens the Quick URL Check tool in the UI. Paste the URL there to scan it."
+        },
+        {
+          "id": "check_attachment",
+          "question": "How to check an attachment?",
+          "icon": "📎",
+          "autoSend": true,
+          "answer": "I can't automatically scan attachments. Upload the file (if the interface supports it) or paste the text; I will guide you how to inspect it safely."
+        },
+        {
+          "id": "short_checklist",
+          "question": "Short checklist to share with colleagues",
+          "icon": "🧾",
+          "autoSend": true,
+          "answer": "Checklist: 1) Don't click unknown links; 2) Verify sender addresses; 3) Use 2FA; 4) Report suspicious emails; 5) Keep software updated."
+        }
+      ]
+    }
+  ]
+}

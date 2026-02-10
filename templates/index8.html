@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Phishing Website Detection</title>
+    <link rel="stylesheet" href="static/images/interface.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+      /* keep your look; minor polish */
+      .result-box { display:inline-block; padding:12px 18px; border-radius:10px; font-weight:600; margin-top:12px; box-shadow:0 8px 20px rgba(2,6,23,0.06); transform-origin:center; transition: transform .28s cubic-bezier(.2,.9,.2,1), opacity .28s ease; opacity:0; transform:translateY(8px) scale(.995); }
+      .result-box.show { opacity:1; transform:translateY(0) scale(1); }
+      .good { background: rgba(16,185,129,0.10); color:#0ea5a4; border:1px solid rgba(16,185,129,0.18); }
+      .bad { background: rgba(239,68,68,0.10); color:#ef4444; border:1px solid rgba(239,68,68,0.16); }
+      .neutral { background: rgba(255,255,255,0.06); color:#E5E7EB; border:1px solid rgba(255,255,255,0.06); }
+
+      .toast-wrap { position: fixed; right: 18px; top: 18px; z-index:2000; display:flex; flex-direction:column; gap:10px; }
+      .mini-toast { min-width:220px; padding:10px 14px; border-radius:10px; color:white; font-weight:600; box-shadow:0 8px 30px rgba(2,6,23,0.12); transform: translateY(-6px); opacity:0; transition: opacity .22s, transform .22s; }
+      .mini-toast.show { opacity:1; transform:none; }
+      .mini-toast.success { background: linear-gradient(90deg,#10b981,#059669); }
+      .mini-toast.warn { background: linear-gradient(90deg,#f59e0b,#d97706); }
+      .mini-toast.danger { background: linear-gradient(90deg,#ef4444,#dc2626); }
+
+      .overlay { position: fixed; inset: 0; display:flex; align-items:center; justify-content:center; z-index:1500; background: rgba(7,10,19,0.35); backdrop-filter: blur(2px); opacity:0; pointer-events:none; transition: opacity .16s ease; }
+      .overlay.show { opacity:1; pointer-events:auto; }
+      .spinner { width:68px; height:68px; border-radius:50%; border:6px solid rgba(255,255,255,0.12); border-top-color:#fff; animation: spin 0.95s linear infinite; box-shadow:0 8px 36px rgba(2,6,23,0.25); }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      .history-card { margin-top: 14px; padding: 12px; border-radius: 10px; border:1px solid rgba(2,6,23,0.04); background: linear-gradient(180deg,#fff,#fbfbff); }
+      .history-item { display:flex; justify-content:space-between; gap:12px; align-items:center; padding:8px; border-radius:8px; }
+      .history-empty { color: #6b7280; font-size: .95rem; }
+
+      @media (max-width:640px) { .mx-auto.max-w-screen-md { padding-left:1rem; padding-right:1rem; } }
+    </style>
+  </head>
+
+  <body class="antialiased bg-white">
+    <div class="toast-wrap" id="toastWrap" aria-hidden="true"></div>
+    <div class="overlay" id="overlay" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
+
+    <div class="bg-white pb-6 sm:pb-8 lg:pb-12">
+      <div class="mx-auto max-w-screen-2xl px-4 md:px-8">
+        <header class="mb-4 flex items-center justify-between py-4 md:py-8">
+          <a href="/" class="inline-flex items-center gap-2.5 text-2xl font-bold text-black md:text-3xl" aria-label="logo">
+            <span class="bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">ASTRAL PROTECTION</span>
+          </a>
+
+          <nav class="hidden gap-12 lg:flex"></nav>
+
+            <a href="/home " class="text-lg font-semibold text-gray-600 hover:text-indigo-500" >Home</a> 
+           
+            <a href="#" class="text-lg font-semibold text-indigo-500" >Detection</a>
+            
+            <a href="/about" class="text-lg font-semibold text-gray-600 hover:text-indigo-500">About</a>
+
+          </nav>
+
+          <!-- Open chat in new tab -->
+          <a href="/interface"  class="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 px-3 py-2 rounded text-white">AI ChatBot</a>
+        </header>
+
+        <div class="bg-white py-6 sm:py-8 lg:py-12">
+          <div class="mx-auto max-w-screen-2xl px-4 md:px-8">
+            <div class="mb-10 md:mb-16">
+              <h2 class="mb-4 text-center text-2xl font-bold text-gray-800 md:mb-6 lg:text-3xl">Phishing Website Detection</h2>
+              <p class="mx-auto max-w-screen-md text-center text-gray-500 md:text-lg">Enter a website URL to check if it's safe or harmful.</p>
+              <br>
+
+              <div id="resultContainer" class="text-center">
+                {% if predict %}
+                  <div id="resultBox" class="result-box {{ predict.css_class if predict.css_class else 'neutral' }} show">
+                    {{ predict.message }}
+                  </div>
+                  <div class="mt-2 text-sm text-gray-500">URL: <strong class="text-gray-800">{{ submitted_url }}</strong></div>
+                {% else %}
+                  <div id="resultPlaceholder" style="display:none"></div>
+                {% endif %}
+              </div>
+
+            </div>
+
+            <form id="checkForm" class="mx-auto grid max-w-screen-md gap-4 sm:grid-cols-2" method="POST" action="/" novalidate>
+              <div class="sm:col-span-2">
+                <label for="url" class="mb-2 inline-block text-sm text-gray-800 sm:text-base">Enter Website URL</label>
+                <input name="url" id="url" type="text" value="{{ submitted_url or '' }}" class="w-full rounded border bg-gray-50 px-3 py-2 text-gray-800 outline-none ring-indigo-300 transition duration-100 focus:ring" placeholder="https://example.com" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                <div id="inputHint" class="text-xs text-gray-400 mt-1">Tip: spaces will be removed and <code>https://</code> will be added automatically if missing.</div>
+              </div>
+
+              <div class="flex items-center justify-between sm:col-span-2">
+                <div class="flex gap-3 items-center">
+                  <button id="submitBtn" class="inline-block rounded-lg bg-indigo-500 px-6 py-3 text-center text-sm font-semibold text-white outline-none ring-indigo-300 transition duration-100 hover:bg-indigo-600 active:bg-indigo-700 md:text-base">Submit</button>
+                  <button id="clearHistoryBtn" type="button" class="inline-block rounded-lg border bg-white px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50">Clear History</button>
+                </div>
+                <div class="text-sm text-gray-500">Local history kept in your browser</div>
+              </div>
+            </form>
+
+            <div id="history" class="history-card hidden" aria-live="polite"></div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+<hr>
+ 
+ <!-- gallery - start -->
+  <div class="bg-white py-6 sm:py-8 lg:py-12">
+    <div class="mx-auto max-w-screen-2xl px-4 md:px-8">
+      <h2 class="mb-4 text-center text-2xl font-bold text-gray-800 md:mb-8 lg:text-3xl xl:mb-12">Gallery</h2>
+  
+      <div class="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:mb-8 md:grid-cols-4 md:gap-6 xl:gap-8">
+        <!-- image - start -->
+        <a href="https://cybercrime.gov.in/" class="group relative flex h-48 items-end overflow-hidden rounded-lg bg-gray-100 shadow-lg md:h-80">
+          <img src="data:image/jpeg;base64,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" loading="lazy" alt="Photo by Minh Pham" class="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110" />
+  
+          <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-gray-800 via-transparent to-transparent opacity-50"></div>
+  
+          <span class="relative mb-3 ml-4 inline-block text-sm text-white md:ml-5 md:text-lg">Cybercrime Govt.Report</span>
+        </a>
+        <!-- image - end -->
+  
+        <!-- image - start -->
+        <a href="/about" class="group relative flex h-48 items-end overflow-hidden rounded-lg bg-gray-100 shadow-lg md:h-80">
+          <img src="https://media.licdn.com/dms/image/v2/D5622AQGwnlXE2iOKJA/feedshare-shrink_2048_1536/B56Zr6JwFyMEAk-/0/1765133451945?e=1766620800&v=beta&t=wl4jt_jsyJhDFuAweX97w82IIK3kttxRtDDBhJf0-z8" loading="lazy" alt="Photo by Magicle" class="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110" />
+  
+          <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-gray-800 via-transparent to-transparent opacity-50"></div>
+  
+          <span class="relative mb-3 ml-4 inline-block text-sm text-white md:ml-5 md:text-lg">About</span>
+        </a>
+        <!-- image - end -->
+  
+        <!-- image - start -->
+        <a href="/home" class="group relative flex h-48 items-end overflow-hidden rounded-lg bg-gray-100 shadow-lg md:h-80">
+          <img src="https://media.licdn.com/dms/image/v2/D5622AQGsG4q0eeWvlw/feedshare-shrink_800/B56Zr6HhvdH8Ag-/0/1765132868789?e=1766620800&v=beta&t=pHBOTfOM7d__rKaftEVdjy7XEyj9pEDXdKyrSFhcrAg" loading="lazy" alt="Photo by Martin Sanchez" class="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110" />
+  
+          <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-gray-800 via-transparent to-transparent opacity-50"></div>
+  
+          <span class="relative mb-3 ml-4 inline-block text-sm text-white md:ml-5 md:text-lg">Home</span>
+        </a>
+        <!-- image - end -->
+  
+        <!-- image - start -->
+        <a href="/interface" class="group relative flex h-48 items-end overflow-hidden rounded-lg bg-gray-100 shadow-lg md:h-80">
+          <img src="https://media.licdn.com/dms/image/v2/D5622AQFGZ3ywFYLC0Q/feedshare-shrink_800/B56Zr6IGNQLoAg-/0/1765133018130?e=1766620800&v=beta&t=1fYuAzzXZrB568nL88DHtaLwLCgiWdbvvCP5RbYpV-w" loading="lazy" alt="Photo by Lorenzo Herrera" class="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110" />
+  
+          <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-gray-800 via-transparent to-transparent opacity-50"></div>
+  
+          <span class="relative mb-3 ml-4 inline-block text-sm text-white md:ml-5 md:text-lg">ChatBot</span>
+        </a>
+        <!-- image - end -->
+      </div>
+  
+        <a href="https://cybercrime.gov.in/Webform/Accept.aspx" class="inline-block rounded-lg border bg-white px-4 py-2 text-center text-sm font-semibold text-gray-500 outline-none ring-indigo-300 transition duration-100 hover:bg-gray-100 focus-visible:ring active:bg-gray-200 md:px-8 md:py-3 md:text-base">File a Complint in Govt Website , direct link</a>
+      </div>
+    </div>
+  </div>
+  <!-- gallery - end -->
+   <hr>
+  
+  
+  
+    
+
+    <div class="bg-white py-6 sm:py-8 lg:py-12">
+      <div class="mx-auto max-w-screen-xl px-4 md:px-8">
+        <div class="mb-10 md:mb-16">
+          <h2 class="mb-4 text-center text-2xl font-bold text-gray-800 md:mb-6 lg:text-3xl">Meet our <span class="bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">ASTRAL</span> Team</h2>
+         </div>
+ 
+  
+      <div class="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 lg:gap-x-8 lg:gap-y-12">
+        <!-- person - start -->
+        <div class="flex flex-col items-center">
+          <div class="mb-2 h-24 w-24 overflow-hidden rounded-full bg-gray-100 shadow-lg md:mb-4 md:h-32 md:w-32">
+            <img src="https://media.licdn.com/dms/image/v2/D5603AQHeawmNJfD3lQ/profile-displayphoto-scale_200_200/B56ZpExXyLIsAY-/0/1762090385980?e=1766016000&v=beta&t=IhRQzpZNcfQlAGj3a6nKGphIbWPft0-E6VqzXHlKWf0" loading="lazy" alt="Photo" class="h-full w-full object-cover object-center" > 
+           </div>
+  
+          <div>
+            <div class="text-center font-bold text-indigo-500 md:text-lg">Manoj TK</div>
+            <p class="mb-3 text-center text-sm text-gray-500 md:mb-4 md:text-base">Team Leader</p>
+  
+            <!-- social - start -->
+            <div class="flex justify-center">
+              <div class="flex gap-4">
+                <a href="#" target="_blank" class="text-gray-400 transition duration-100 hover:text-gray-500 active:text-gray-600">
+                  <svg class="h-5 w-5" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                  </svg>
+                </a>
+  
+                <a href="#" target="_blank" class="text-gray-400 transition duration-100 hover:text-gray-500 active:text-gray-600">
+                  <svg class="h-5 w-5" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <!-- social - end -->
+          </div>
+        </div>
+        <!-- person - end -->
+  
+        <!-- person - start -->
+        <div class="flex flex-col items-center">
+          <div class="mb-2 h-24 w-24 overflow-hidden rounded-full bg-gray-100 shadow-lg md:mb-4 md:h-32 md:w-32">
+            <img src="https://media.licdn.com/dms/image/v2/D4D03AQEusd7j1V8qfw/profile-displayphoto-scale_200_200/B4DZrqZm6MH0AY-/0/1764869178274?e=1766620800&v=beta&t=notsIfWqr-5U51Mi4ihGhN5SW4oFpphmiD12ujROh3w" loading="lazy" alt="Photo by christian ferrer" class="h-full w-full object-cover object-center" />
+          </div>
+  
+          <div>
+            <div class="text-center font-bold text-indigo-500 md:text-lg">Megharaj</div>
+            <p class="mb-3 text-center text-sm text-gray-500 md:mb-4 md:text-base">Team Member</p>
+  
+            <!-- social - start -->
+            <div class="flex justify-center">
+              <div class="flex gap-4">
+                <a href="#" target="_blank" class="text-gray-400 transition duration-100 hover:text-gray-500 active:text-gray-600">
+                  <svg class="h-5 w-5" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                  </svg>
+                </a>
+  
+                <a href="#" target="_blank" class="text-gray-400 transition duration-100 hover:text-gray-500 active:text-gray-600">
+                  <svg class="h-5 w-5" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <!-- social - end -->
+          </div>
+        </div>
+        <!-- person - end -->
+  
+        <!-- person - start -->
+        <div class="flex flex-col items-center">
+          <div class="mb-2 h-24 w-24 overflow-hidden rounded-full bg-gray-100 shadow-lg md:mb-4 md:h-32 md:w-32">
+            <img src="https://media.licdn.com/dms/image/v2/D5603AQFu8N2qN2Q1NA/profile-displayphoto-scale_200_200/B56ZrqZ.d8LoAg-/0/1764869272187?e=1766620800&v=beta&t=6d6tYSHm2gVyF22-hAXU1Y-9Hdkv3NtvJNVICdyDgBY" loading="lazy" alt="Photo by Ayo Ogunseinde" class="h-full w-full object-cover object-center" />
+          </div>
+  
+          <div>
+            <div class="text-center font-bold text-indigo-500 md:text-lg">Likith Gowda</div>
+            <p class="mb-3 text-center text-sm text-gray-500 md:mb-4 md:text-base">Team Member</p>
+  
+            <!-- social - start -->
+            <div class="flex justify-center">
+              <div class="flex gap-4">
+                <a href="#" target="_blank" class="text-gray-400 transition duration-100 hover:text-gray-500 active:text-gray-600">
+                  <svg class="h-5 w-5" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                  </svg>
+                </a>
+  
+                <a href="#" target="_blank" class="text-gray-400 transition duration-100 hover:text-gray-500 active:text-gray-600">
+                  <svg class="h-5 w-5" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <!-- social - end -->
+          </div>
+        </div>
+        <!-- person - end -->
+  
+        <!-- person - start -->
+        <div class="flex flex-col items-center">
+          <div class="mb-2 h-24 w-24 overflow-hidden rounded-full bg-gray-100 shadow-lg md:mb-4 md:h-32 md:w-32">
+            <img src="https://th.bing.com/th/id/OIP.G-LgkamUnA3bsXohMCT3KgAAAA?o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3 " loading="lazy" alt="Photo by Midas Hofstra" class="h-full w-full object-cover object-center" />
+          </div>
+  
+          <div>
+            <div class="text-center font-bold text-indigo-500 md:text-lg">SSSE Campus</div>
+            <p class="mb-3 text-center text-sm text-gray-500 md:mb-4 md:text-base">Engineering college</p>
+  
+            <!-- social - start -->
+            <div class="flex justify-center">
+              <div class="flex gap-4">
+                <a href="#" target="_blank" class="text-gray-400 transition duration-100 hover:text-gray-500 active:text-gray-600">
+                  <svg class="h-5 w-5" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                  </svg>
+                </a>
+  
+                <a href="#" target="_blank" class="text-gray-400 transition duration-100 hover:text-gray-500 active:text-gray-600">
+                  <svg class="h-5 w-5" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <!-- social - end -->
+          </div>
+        </div>
+        <!-- person - end -->
+      </div>
+    </div>
+    </div>
+    
+<hr color="red" >
+
+
+         <div class="border-t py-8 text-center text-sm text-gray-400">© 2025 - Present ASTRAL PROTECTION. All rights reserved.</div>
+         
+
+        <script>
+      // helpers
+      const toastWrap = document.getElementById('toastWrap');
+      const overlay = document.getElementById('overlay');
+      function showToast(text, kind='success', ms=3000) {
+        const t = document.createElement('div');
+        t.className = 'mini-toast ' + (kind==='warn' ? 'warn' : kind==='danger' ? 'danger' : 'success');
+        t.textContent = text;
+        toastWrap.appendChild(t);
+        requestAnimationFrame(()=> t.classList.add('show'));
+        setTimeout(()=> { t.classList.remove('show'); setTimeout(()=> t.remove(), 300); }, ms);
+      }
+      function showSpinner(){ overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false'); }
+      function hideSpinner(){ overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
+
+      const urlInput = document.getElementById('url');
+      const form = document.getElementById('checkForm');
+
+      // cleanup: remove spaces/newlines and trim
+      function cleanupValue(v){ return (v || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g,'').trim(); }
+
+      // ensure protocol (add https:// if missing)
+      function ensureProtocol(v){
+        if(!v) return v;
+        if(/^https?:\/\//i.test(v)) return v;
+        return 'https://' + v;
+      }
+
+      // paste cleanup
+      urlInput.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text') || '';
+        const cleaned = cleanupValue(text);
+        document.execCommand('insertText', false, cleaned);
+      });
+
+      // blur: cleanup + add protocol visually
+      urlInput.addEventListener('blur', () => {
+        let v = cleanupValue(urlInput.value);
+        if(v) v = ensureProtocol(v);
+        urlInput.value = v;
+      });
+
+      // remove spaces while typing
+      urlInput.addEventListener('input', () => {
+        const pos = urlInput.selectionStart;
+        const v = urlInput.value;
+        const cleaned = v.replace(/[\r\n]+/g, ' ').replace(/\s+/g,'');
+        if(cleaned !== v){
+          urlInput.value = cleaned;
+          try{ urlInput.setSelectionRange(Math.min(pos, cleaned.length), Math.min(pos, cleaned.length)); } catch(e){}
+        }
+      });
+
+      form.addEventListener('submit', function(e){
+        const raw = urlInput.value || '';
+        const cleaned = cleanupValue(raw);
+        if(!cleaned){
+          e.preventDefault();
+          showToast('Please enter a URL before submitting', 'warn', 2200);
+          urlInput.focus();
+          return false;
+        }
+        const final = ensureProtocol(cleaned);
+        urlInput.value = final;
+        showSpinner();
+        return true; // allow POST -> PRG on server
+      });
+
+      // history (localStorage)
+      const HISTORY_KEY = 'astral_phish_history_v1';
+      function getHistory(){ try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e){ return [] } }
+      function saveHistory(arr){ localStorage.setItem(HISTORY_KEY, JSON.stringify(arr.slice(0,20))) }
+      function addHistoryEntry(url, statusLabel){ const arr = getHistory(); arr.unshift({url, status:statusLabel, ts: Date.now()}); saveHistory(arr); renderHistory(); }
+      function clearHistory(){ localStorage.removeItem(HISTORY_KEY); renderHistory(); showToast('History cleared', 'success', 1400); }
+      document.getElementById('clearHistoryBtn').addEventListener('click', () => { if(confirm('Clear local history?')) clearHistory(); });
+
+      function renderHistory(){
+        const container = document.getElementById('history');
+        const arr = getHistory();
+        container.innerHTML = '';
+        if(!arr.length){ container.classList.add('hidden'); return; }
+        container.classList.remove('hidden');
+        arr.slice(0,8).forEach(it => {
+          const row = document.createElement('div');
+          row.className = 'history-item';
+          row.innerHTML = `<div style="display:flex;flex-direction:column"><div class="text-sm font-semibold">${escapeHtml(it.url)}</div><div class="text-xs text-gray-400">${new Date(it.ts).toLocaleString()}</div></div><div class="text-sm text-gray-600">${escapeHtml(it.status)}</div>`;
+          container.appendChild(row);
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        renderHistory();
+        // pick up server result if present
+        const resultBox = document.getElementById('resultBox');
+        if(resultBox){
+          const urlLabel = (document.querySelector('#resultContainer strong') || {}).textContent || (urlInput.value || '').trim();
+          const isGood = resultBox.classList.contains('good');
+          const label = isGood ? 'SAFE' : (resultBox.classList.contains('bad') ? 'PHISHING' : 'UNKNOWN');
+          const nrml = (urlLabel || '').trim();
+          addHistoryEntry(nrml || '(unknown)', label);
+          showToast(label === 'SAFE' ? 'Website looks safe' : (label === 'PHISHING' ? 'Warning: Phishing detected' : 'Result: Unknown'), isGood ? 'success' : 'danger', 3000);
+          hideSpinner();
+        } else {
+          hideSpinner();
+        }
+      });
+
+      window.addEventListener('pageshow', function(evt) {
+        if(evt.persisted){
+          const rb = document.getElementById('resultBox');
+          if(rb) rb.style.display = 'none';
+          urlInput.value = '';
+        }
+      });
+
+      function escapeHtml(s){ return (s||'').replace(/[&<>"'`=\/]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[c]; }); }
+    </script>
+  </body>
+</html>

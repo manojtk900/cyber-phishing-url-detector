@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ASTRAL Interface</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root{--primary1:#6a3cff;--primary2:#386be0;--card:#fff;--muted:#64798a;}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Segoe UI,Roboto,Arial,sans-serif}
+  body{background:linear-gradient(180deg,var(--primary1),var(--primary2));display:flex;align-items:center;justify-content:center;height:100vh;padding:20px;}
+  .app{width:95%;max-width:1000px;border-radius:12px;box-shadow:0 30px 80px rgba(2,12,30,.45);overflow:hidden;background:transparent;display:flex;flex-direction:column;height:85vh;}
+  .top{background:linear-gradient(90deg,#2b4b86,#18304b);height:84px;color:#fff;display:flex;align-items:center;justify-content:center;position:relative}
+  .top .title{font-weight:800;font-size:22px}
+  .content{flex:1;background:var(--card);overflow:auto;padding:18px;display:flex;flex-direction:column}
+  .intro{padding:8px 12px}
+  .chips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:8px 0}
+  .chip{background:#efefef;padding:8px 12px;border-radius:20px;cursor:pointer}
+  .conversation{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+  .bubble.user{align-self:flex-end;background:linear-gradient(90deg,#0f5f78,#073748);color:#fff;padding:10px 14px;border-radius:14px 14px 6px 14px;max-width:78%}
+  .bubble.bot{align-self:flex-start;background:#fff;border:1px solid rgba(0,0,0,.06);padding:10px 14px;border-radius:14px 14px 14px 6px;max-width:78%}
+  .input-row{display:flex;gap:10px;padding-top:12px;border-top:1px solid rgba(0,0,0,.03)}
+  .input-row input{flex:1;padding:10px 12px;border-radius:24px;border:1px solid rgba(0,0,0,.06);outline:none}
+  .send{background:linear-gradient(90deg,#2b4b86,#0e3650);color:#fff;padding:10px 16px;border-radius:24px;border:none;cursor:pointer}
+  footer{font-size:12px;color:#666;text-align:center;padding:8px}
+  .muted { color: var(--muted); font-size:0.95rem; }
+</style>
+</head>
+<body>
+  <div class="app" role="application">
+    <div class="top"><div class="title"><i class="fas fa-shield-alt"></i>&nbsp;ASTRAL PROTECTION Chat Interface</div></div>
+    <div class="content">
+      <div class="intro">
+        <h3 style="text-align:center;color:#19475f">Welcome — Astral Cybersecurity Assistant</h3>
+        <p style="text-align:center" class="muted">Ask about phishing, reporting, IT Act, Wi-Fi security, and more.</p>
+        <div class="chips">
+          <div class="chip" data-text="What is phishing and how can I detect it?">What is phishing?</div>
+          <div class="chip" data-text="How do I report a cybercrime in India?">Report cybercrime</div>
+          <div class="chip" data-text="What are penalties under the IT Act 2000?">IT Act penalties</div>
+        </div>
+      </div>
+
+      <div class="conversation" id="conversation" aria-live="polite"></div>
+
+      <div class="input-row">
+        <input id="userInput" placeholder="Type a message..." autocomplete="off"/>
+        <button id="sendBtn" class="send">Send</button>
+      </div>
+    </div>
+    <footer>Local demo — served by Flask endpoint <code>/chat_api</code></footer>
+  </div>
+
+<script>
+const conversation = document.getElementById('conversation');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const chips = document.querySelectorAll('.chip');
+
+function appendBubble(text, who='user'){
+  const d = document.createElement('div');
+  d.className = 'bubble ' + (who==='user'?'user':'bot');
+  // support basic newlines
+  d.innerHTML = text.replace(/\n/g, '<br/>');
+  conversation.appendChild(d);
+  conversation.scrollTop = conversation.scrollHeight;
+}
+
+function makeRequest(payload){
+  // send to the Flask JSON endpoint at /chat_api
+  return fetch('/chat_api', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  }).then(r => r.json());
+}
+
+async function sendMessage(){
+  const msg = userInput.value.trim();
+  if(!msg) return;
+  appendBubble(msg,'user');
+  userInput.value='';
+  // typing indicator
+  const typing = document.createElement('div');
+  typing.className='bubble bot';
+  typing.textContent='…';
+  conversation.appendChild(typing);
+  conversation.scrollTop = conversation.scrollHeight;
+
+  try {
+    const json = await makeRequest({message: msg});
+    typing.remove();
+    if(json && json.reply) appendBubble(json.reply,'bot');
+    else if(json && json.error) appendBubble("Error: "+json.error,'bot');
+    else appendBubble("No reply from server",'bot');
+  } catch(e){
+    typing.remove();
+    appendBubble("Connection error — is Flask running?","bot");
+    console.error(e);
+  }
+}
+
+sendBtn.addEventListener('click', sendMessage);
+userInput.addEventListener('keydown', e=>{ if(e.key==='Enter') sendMessage(); });
+
+chips.forEach(c=> c.addEventListener('click', e=>{ 
+  const q = c.getAttribute('data-text');
+  userInput.value = q; 
+  userInput.focus(); 
+  // optional: auto-send when chip clicked
+  // sendMessage();
+}));
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "version": "lr_v1.2025-12-07",
+  "trained_at": "2025-12-07T00:10:00Z",
+  "accuracy": 0.9823,
+  "notes": "LR char-tfidf with C=1.0, ngram 3-5, trained on dataset X",
+  "model_file": "models/model_lr_new.pkl",
+  "vector_file": "models/vectorizer_lr_new.pkl"
+}

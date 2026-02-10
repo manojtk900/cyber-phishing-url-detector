@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Home — Phishing Awareness (ASTRAL PROTECTION)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{
+      --bg:#071029; --card:#ffffff; --muted:#94a3b8;
+      --accent1:#6a3cff; --accent2:#00c2ff; --accent3:#ff7ab6;
+      --glass: rgba(255,255,255,0.06);
+    }
+    *{box-sizing:border-box;font-family:Inter,system-ui,Arial;margin:0;padding:0}
+    body{background:linear-gradient(180deg,#041020 0%, #071029 100%);color:#e6eef8;line-height:1.5}
+    .container{max-width:1100px;margin:28px auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:linear-gradient(90deg, rgba(255,255,255,0.03), transparent);border-radius:12px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:54px;height:54px;border-radius:10px;background:linear-gradient(135deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;color:white}
+    nav a{color:var(--muted);text-decoration:none;margin-left:18px;font-weight:600}
+    nav a.active{color:white}
+    .hero{display:grid;grid-template-columns:1fr 420px;gap:20px;margin-top:18px;align-items:center}
+    .hero-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:28px;border-radius:14px;backdrop-filter:blur(6px)}
+    .hero h1{font-size:28px;color:white;margin-bottom:8px}
+    .hero p{color:var(--muted);margin-bottom:16px}
+    .cta{display:flex;gap:12px}
+    .btn{padding:10px 16px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+    .btn-primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:white}
+    .btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:18px}
+    .card{background:var(--glass);padding:18px;border-radius:12px}
+    .card h3{color:white;margin-bottom:8px}
+    .small{font-size:13px;color:var(--muted)}
+    .videos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .video-embed{border-radius:10px;overflow:hidden;background:#071a2b}
+    .case-list{display:flex;flex-direction:column;gap:12px}
+    .case{display:flex;gap:12px;align-items:flex-start}
+    .avatar{width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,var(--accent3),var(--accent1));display:flex;align-items:center;justify-content:center;font-weight:700}
+    .accordion{border-radius:10px;overflow:hidden}
+    .acc-item{border-bottom:1px solid rgba(255,255,255,0.04)}
+    .acc-btn{display:flex;justify-content:space-between;padding:12px 16px;cursor:pointer}
+    .tips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .tip{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:10px}
+    .impact{display:flex;gap:14px;align-items:center}
+    .stat{flex:1;padding:18px;border-radius:10px;background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent)}
+    .progress{height:10px;background:rgba(255,255,255,0.06);border-radius:8px;overflow:hidden}
+    .prog-inner{height:100%;border-radius:8px}
+    footer{margin-top:26px;padding:18px;text-align:center;color:var(--muted)}
+    @media (max-width:980px){.hero{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.videos{grid-template-columns:1fr}.tips{grid-template-columns:1fr}.container{padding:12px}}
+  </style>
+</head>
+<body>
+
+  
+  <div class="container">
+    
+    <header>
+      <div class="brand">
+        <div class="logo">AP</div>
+         
+        <div>
+          <div style="font-weight:800">ASTRAL PROTECTION</div>
+         
+          <div style="font-size:12px;color:var(--muted)">Protecting people from phishing and cyber fraud</div>
+        </div>
+      </div>
+      <nav>
+        
+        <a class="active">Home</a>
+        <a href="#videos">Videos</a>
+        <a href="#cases">Case Studies</a>
+        <a href="#law">Laws</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-card">
+        <h1>About Phishing — What you need to know</h1>
+        <p>Phishing is a social‑engineering attack that tricks people into giving sensitive information. ASTRAL PROTECTION curates awareness videos, real case studies, legal guidance and reporting steps so communities can detect, report and recover from phishing attacks.</p>
+        <div class="cta">
+          <button class="btn btn-primary" onclick="scrollToSection('videos')">Watch Awareness Videos</button>
+          <button class="btn btn-outline" onclick="scrollToSection('cases')">Read Case Studies</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Quick Stats</h3>
+        <div class="small">Monthly reported phishing attempts</div>
+        <div style="margin-top:10px;font-size:24px;font-weight:800">12,340</div>
+        <div style="margin-top:12px" class="small">Top targeted sectors: Banking, E‑commerce, Social Media</div>
+      </div>
+    </section>
+
+    <section style="margin-top:18px" id="videos">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h2 style="margin:0">Awareness Videos (YouTube & partners)</h2>
+        <div style="color:var(--muted);font-size:14px">Official and high-quality explainers — embed and share</div>
+      </div>
+
+      <div class="videos">
+        <div class="video-embed">
+          <!-- CISA animated explainer -->
+          <iframe width="100%" height="240" src="https://www.youtube.com/embed/sg0kQYvTlnc" title="How to Avoid Phishing (CISA)" frameborder="0" allowfullscreen></iframe>
+        </div>
+
+        <div class="video-embed">
+          <!-- Phishing explained short video -->
+          <iframe width="100%" height="240" src="https://www.youtube.com/embed/XBkzBrXlle0" title="Phishing Explained" frameborder="0" allowfullscreen></iframe>
+        </div>
+      </div>
+
+      <div style="margin-top:12px" class="small">More sources: CERT‑In advisories, RBI security tips and public awareness playlists. Use the embed button to add videos to your social pages.</div>
+    </section>
+
+    <section style="margin-top:18px" id="cases">
+      <h2>Case Studies</h2>
+      <div class="case-list" style="margin-top:12px">
+        <div class="case card">
+          <div class="avatar">B</div>
+          <div>
+            <div style="font-weight:700">Case: Banking Fraud via Credential Harvesting</div>
+            <div class="small">Summary: Attackers spoofed bank emails and harvested OTPs. Loss: ₹1.2 lakh. Lessons: Never reveal OTPs; use transaction alerts; report immediately to bank and CERT‑In.</div>
+          </div>
+        </div>
+
+        <div class="case card">
+          <div class="avatar">E</div>
+          <div>
+            <div style="font-weight:700">Case: E‑commerce Refund Scam</div>
+            <div class="small">Summary: Fake refund pages collected credentials leading to account takeover. Lessons: verify URLs, use saved payment methods cautiously, enable 2FA.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:18px">
+      <h2>Victims & Testimonials</h2>
+      <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+        <div class="card" style="flex:1;min-width:260px">
+          <div style="font-weight:700">Rita — Small business owner</div>
+          <div class="small">"We lost customer access after a phishing link. The checklist helped us recover faster."</div>
+        </div>
+        <div class="card" style="flex:1;min-width:260px">
+          <div style="font-weight:700">Amit — Student</div>
+          <div class="small">"The awareness video taught me how to spot fake OTP requests."</div>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:18px">
+      <h2>How to Protect Yourself</h2>
+      <div class="tips" style="margin-top:12px">
+        <div class="tip">
+          <div style="font-weight:700">Verify sender</div>
+          <div class="small">Check the email address — don't rely on display names. Hover over links to preview the destination URL.</div>
+        </div>
+        <div class="tip">
+          <div style="font-weight:700">Never share OTPs</div>
+          <div class="small">Banks and legitimate services never ask for passwords or OTPs over chat or calls.</div>
+        </div>
+        <div class="tip">
+          <div style="font-weight:700">Enable 2FA</div>
+          <div class="small">Use authenticator apps, keep software and browsers updated, and use password managers.</div>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:18px" id="law">
+      <h2>Acts, Laws & Reporting (India)</h2>
+      <div class="accordion card" style="margin-top:12px">
+        <div class="acc-item">
+          <div class="acc-btn" onclick="toggleAcc(this)">
+            <div><strong>Information Technology Act, 2000 — Relevant sections</strong><div class="small">Sections include identity theft, cheating by personation, and unauthorized access.</div></div>
+            <div><i class="fa-solid fa-plus"></i></div>
+          </div>
+          <div class="acc-content small" style="display:none;padding:10px 16px 18px">Key sections used in phishing cases: Section 66C (identity theft), Section 66D (cheating by personation) and provisions under Section 43 for damage to computer systems. These sections can lead to fines and imprisonment depending on the offense.</div>
+        </div>
+
+        <div class="acc-item">
+          <div class="acc-btn" onclick="toggleAcc(this)">
+            <div><strong>RBI & Banking Guidelines</strong><div class="small">Banks must educate customers, report frauds and follow fraud risk-management directions.</div></div>
+            <div><i class="fa-solid fa-plus"></i></div>
+          </div>
+          <div class="acc-content small" style="display:none;padding:10px 16px 18px">Reserve Bank of India guidelines require banks to notify customers about cyber risks, track and report frauds, and provide a mechanism for redressal. Customers should inform their bank immediately on noticing unauthorised transactions.</div>
+        </div>
+
+        <div class="acc-item">
+          <div class="acc-btn" onclick="toggleAcc(this)">
+            <div><strong>How to report phishing / open a case</strong><div class="small">Practical reporting steps for victims and defenders.</div></div>
+            <div><i class="fa-solid fa-plus"></i></div>
+          </div>
+          <div class="acc-content small" style="display:none;padding:10px 16px 18px">
+            1. Preserve evidence: Save the full email (headers), screenshots of the site, URLs and any messages.
+
+            2. Do not interact further with the attacker: avoid clicking links or replying.
+
+            3. Notify your bank / payment provider immediately if financial info was shared.
+
+            4. Report to CERT‑In (incident@cert-in.org.in) and use local police cyber cell or the national cybercrime portal.
+
+            5. Change passwords from a safe device and enable 2FA; scan devices for malware.
+
+            6. Share a short case summary with our project if you want us to document it for awareness (anonymised by default).
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:18px">
+      <h2> Share Our Project</h2>
+      <div class="card" style="display:flex;gap:12px;align-items:center">
+        <div style="flex:1">
+          <div style="font-weight:700">Get involved</div>
+          <div class="small">Embed our videos, share case summaries, or add our awareness checklist on your website. Contact us to get promotional banners and ready-to-share clips.</div>
+        </div>
+        <div>
+          <button class="btn btn-primary" onclick="openContact()">Contact Team</button>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:18px">
+      <h2>Impact on Society</h2>
+      <div class="impact" style="margin-top:12px">
+        <div class="stat">
+          <div style="font-size:20px;font-weight:800">Awareness increased</div>
+          <div class="small">People who saw our material reported better recognition of scams.</div>
+          <div style="margin-top:10px" class="progress"><div class="prog-inner" style="width:72%;background:linear-gradient(90deg,var(--accent2),var(--accent1))"></div></div>
+        </div>
+        <div class="stat">
+          <div style="font-size:20px;font-weight:800">Reduction in losses</div>
+          <div class="small">Target communities saw measurable reduction in successful attacks.</div>
+          <div style="margin-top:10px" class="progress"><div class="prog-inner" style="width:43%;background:linear-gradient(90deg,var(--accent3),var(--accent1))"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div style="font-weight:700">ASTRAL PROTECTION — Awareness Project</div>
+      <div class="small">Share this page • Report phishing • Contact support</div>
+    </footer>
+  </div>
+
+  <script>
+    function scrollToSection(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}    
+    function toggleAcc(btn){
+      const icon = btn.querySelector('i');
+      const content = btn.nextElementSibling;
+      const open = content.style.display === 'block';
+      content.style.display = open ? 'none' : 'block';
+      icon.classList.toggle('fa-plus', open);
+      icon.classList.toggle('fa-minus', !open);
+    }
+    function openContact(){alert('Contact: astral.protection@example.com — we will send promotional materials and embed codes.');}
+  </script>
+</body>
+</html>

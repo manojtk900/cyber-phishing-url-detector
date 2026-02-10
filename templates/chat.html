@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+<title>ASTRAL Chat Assistant</title>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        background: linear-gradient(135deg, #141A32, #0A0D14);
+        font-family: "Poppins", sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+    }
+
+    .chat-wrapper {
+        width: 92%;
+        max-width: 900px;
+        height: 90vh;
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(12px);
+        border-radius: 22px;
+        box-shadow: 0 0 18px rgba(106,60,255,0.4);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* HEADER */
+    .chat-header {
+        padding: 18px;
+        background: linear-gradient(90deg, rgba(106,60,255,0.4), rgba(56,107,224,0.4));
+        box-shadow: 0 0 14px rgba(106,60,255,0.5);
+        color: white;
+        text-align: center;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        position: relative;
+    }
+
+    .back-btn {
+        position: absolute;
+        left: 14px;
+        top: 18px;
+        color: #d8d8d8;
+        font-size: 22px;
+        text-decoration: none;
+    }
+
+    /* MESSAGES */
+    #messages {
+        flex: 1;
+        padding: 22px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .msg {
+        max-width: 75%;
+        padding: 14px 18px;
+        border-radius: 18px;
+        line-height: 1.5;
+        font-size: 15px;
+        animation: pop 0.25s ease-out;
+        word-wrap: break-word;
+    }
+
+    @keyframes pop {
+        from { transform: scale(0.90); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .user {
+        align-self: flex-end;
+        background: linear-gradient(90deg, rgba(106,60,255,0.9), rgba(56,107,224,0.8));
+        color: white;
+        border-bottom-right-radius: 2px;
+    }
+
+    .bot {
+        align-self: flex-start;
+        background: rgba(255,255,255,0.12);
+        color: #e6eef6;
+        border-bottom-left-radius: 2px;
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* SPECIAL COLORS */
+    .safe { color: #3cff8f; font-weight: bold; }
+    .bad { color: #ff4d4d; font-weight: bold; }
+
+    /* Composer */
+    .composer {
+        padding: 16px;
+        display: flex;
+        gap: 12px;
+        background: rgba(0,0,0,0.4);
+        border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .composer input {
+        flex: 1;
+        padding: 14px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.2);
+        outline: none;
+        color: white;
+        font-size: 15px;
+    }
+
+    .composer button {
+        padding: 14px 20px;
+        background: #6a3cff;
+        border: none;
+        border-radius: 12px;
+        color: white;
+        cursor: pointer;
+        font-size: 15px;
+        box-shadow: 0 0 8px rgba(106,60,255,0.6);
+    }
+
+    /* Typing animation */
+    .typing {
+        display: flex;
+        gap: 5px;
+    }
+
+    .typing div {
+        width: 8px;
+        height: 8px;
+        background: #b8bed6;
+        border-radius: 50%;
+        animation: blink 1s infinite;
+    }
+
+    .typing div:nth-child(2) { animation-delay: 0.2s; }
+    .typing div:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+        0% { opacity: 0.3; transform: translateY(0); }
+        50% { opacity: 1; transform: translateY(-4px); }
+        100% { opacity: 0.3; transform: translateY(0); }
+    }
+
+</style>
+</head>
+
+<body>
+
+<div class="chat-wrapper">
+
+    <div class="chat-header">
+        <a href="/" class="back-btn">←</a>
+        ASTRAL Cyber Assistant
+    </div>
+
+    <div id="messages"></div>
+
+    <form id="chatForm" class="composer">
+        <input id="inputMsg" type="text" placeholder="Type a message...">
+        <button type="submit">Send</button>
+    </form>
+</div>
+
+<script>
+const messages = document.getElementById('messages');
+const form = document.getElementById('chatForm');
+const input = document.getElementById('inputMsg');
+
+function addMessage(text, who="bot") {
+    const div = document.createElement("div");
+    div.className = "msg " + who;
+
+    // colorize SAFE / PHISHING messages
+    text = text
+        .replace(/SAFE/gi, '<span class="safe">SAFE</span>')
+        .replace(/PHISHING/gi, '<span class="bad">PHISHING</span>');
+
+    div.innerHTML = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function showTyping() {
+    const div = document.createElement("div");
+    div.className = "msg bot";
+    div.id = "typing";
+    div.innerHTML = `
+        <div class="typing">
+            <div></div><div></div><div></div>
+        </div>`;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function hideTyping() {
+    const el = document.getElementById("typing");
+    if (el) el.remove();
+}
+
+async function sendMessage(text) {
+    addMessage(text, "user");
+
+    showTyping();
+
+    const res = await fetch("/chat_api", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({message: text})
+    });
+
+    const data = await res.json();
+    hideTyping();
+
+    addMessage(data.reply, "bot");
+}
+
+form.addEventListener("submit", e => {
+    e.preventDefault();
+    const txt = input.value.trim();
+    if (!txt) return;
+    input.value = "";
+    sendMessage(txt);
+});
+
+// Intro message
+addMessage("👋 Hello! I'm your ASTRAL Assistant. Ask anything about phishing, or paste a URL to check.");
+</script>
+
+</body>
+</html>
